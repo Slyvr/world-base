@@ -80,16 +80,29 @@ public class AutoTileSystem {
                 }
             }
 
-            // Best subset match: first sprite whose constraints are fully contained in active.
-            // Only allow 1-constraint corner sprites when the tile genuinely has ≤2 neighbors
-            // (prevents a 5-neighbor edge tile from matching a corner sprite).
+            // Best subset match: iterate sprites by constraint count descending.
+            // - 8-cons: full interior
+            // - 7-cons: concave corners (1 missing neighbor)
+            // - 3-cons: straight edges
+            // - 1-cons: convex corners
+            // - 0-cons: isolated tile (only match when active is empty)
+            int matched = 0;
             for (SpriteEntry entry : candidates) {
-                if (entry.constraints.size() <= 1 && active.size() > 2) continue;
+                // 0-constraint sprites should only match truly isolated tiles
+                if (entry.constraints.isEmpty()) {
+                    if (active.isEmpty()) {
+                        em.getComponent(entity, AppearanceComponent.class).spriteId = entry.spriteId;
+                        matched = 1;
+                    }
+                    break;
+                }
                 if (active.containsAll(entry.constraints)) {
                     em.getComponent(entity, AppearanceComponent.class).spriteId = entry.spriteId;
+                    matched = 1;
                     break;
                 }
             }
+            // If nothing matched, leave default sprite (full grass 118)
         }
     }
 
