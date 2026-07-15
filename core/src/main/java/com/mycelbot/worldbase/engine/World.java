@@ -1,45 +1,43 @@
 package com.mycelbot.worldbase.engine;
 
+import com.mycelbot.worldbase.engine.components.AppearanceComponent;
+import com.mycelbot.worldbase.engine.components.PositionComponent;
+import com.mycelbot.worldbase.engine.components.TileComponent;
+import com.mycelbot.worldbase.engine.ecs.EntityManager;
+
 /**
- * The game world — a 2D grid of Tiles with width and height.
- * Stores tile data including terrain type.
+ * The game world — manages tile entities via an EntityManager.
+ * <p>
+ * On creation, populates the grid with tile entities, each carrying
+ * PositionComponent, AppearanceComponent, and TileComponent.
+ * Future entities (players, items, etc.) can be added dynamically.
  */
 public class World {
 
     private final int width;
     private final int height;
-    private final Tile[][] tiles;
+    private final EntityManager entityManager;
 
     public World(int width, int height) {
         this.width = width;
         this.height = height;
-        this.tiles = new Tile[width][height];
+        this.entityManager = new EntityManager();
+        populateTiles(TileType.GRASS);
+    }
+
+    /** Fill the grid with tile entities of the given type. */
+    private void populateTiles(TileType type) {
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                tiles[x][y] = new Tile();
+                var entity = entityManager.createEntity();
+                entityManager.addComponent(entity, new PositionComponent(x, y));
+                entityManager.addComponent(entity, new TileComponent(type));
+                entityManager.addComponent(entity, new AppearanceComponent(type.getSpriteId()));
             }
         }
     }
 
-    public int getWidth() {
-        return width;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public Tile getTile(int x, int y) {
-        if (x < 0 || x >= width || y < 0 || y >= height) return null;
-        return tiles[x][y];
-    }
-
-    public void setTile(int x, int y, Tile tile) {
-        if (x < 0 || x >= width || y < 0 || y >= height) return;
-        tiles[x][y] = tile;
-    }
-
-    public boolean inBounds(int x, int y) {
-        return x >= 0 && x < width && y >= 0 && y < height;
-    }
+    public int getWidth()  { return width; }
+    public int getHeight() { return height; }
+    public EntityManager getEntityManager() { return entityManager; }
 }

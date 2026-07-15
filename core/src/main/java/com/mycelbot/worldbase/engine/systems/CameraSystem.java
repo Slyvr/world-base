@@ -1,17 +1,15 @@
-package com.mycelbot.worldbase.engine;
+package com.mycelbot.worldbase.engine.systems;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 
 /**
- * Controls the 2D top-down camera via mouse input.
- * - Middle-click + drag: pan the view
- * - Scroll wheel: zoom in/out (centered on cursor position)
- * <p>
- * Designed to be modular — controls can be remapped or extended.
+ * System that handles camera input and maintains view state.
+ * - Middle-click + drag: pan
+ * - Scroll wheel: zoom (centered on cursor)
  */
-public class CameraController extends InputAdapter {
+public class CameraSystem extends InputAdapter {
 
     private float offsetX = 0f;
     private float offsetY = 0f;
@@ -23,8 +21,6 @@ public class CameraController extends InputAdapter {
 
     private int lastMouseX, lastMouseY;
     private boolean dragging = false;
-
-    public CameraController() {}
 
     @Override
     public boolean mouseMoved(int screenX, int screenY) {
@@ -47,10 +43,8 @@ public class CameraController extends InputAdapter {
     @Override
     public boolean touchDragged(int screenX, int screenY, int pointer) {
         if (dragging) {
-            float dx = (screenX - lastMouseX);
-            float dy = (screenY - lastMouseY);
-            offsetX += dx;
-            offsetY -= dy;
+            offsetX += screenX - lastMouseX;
+            offsetY -= screenY - lastMouseY;
             lastMouseX = screenX;
             lastMouseY = screenY;
             return true;
@@ -69,15 +63,9 @@ public class CameraController extends InputAdapter {
 
     @Override
     public boolean scrolled(float amountX, float amountY) {
-        // Calculate the world point under the cursor before zooming
         float worldX = (lastMouseX - offsetX) / zoom;
         float worldY = (lastMouseY - offsetY) / zoom;
-
-        // Apply zoom
-        zoom -= amountY * ZOOM_SPEED;
-        zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom));
-
-        // Reposition offset so the same world point stays under the cursor
+        zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom - amountY * ZOOM_SPEED));
         offsetX = lastMouseX - worldX * zoom;
         offsetY = lastMouseY - worldY * zoom;
         return true;
@@ -85,34 +73,10 @@ public class CameraController extends InputAdapter {
 
     // ---- Public accessors ----
 
-    public float getOffsetX() {
-        return offsetX;
-    }
+    public float getOffsetX() { return offsetX; }
+    public float getOffsetY() { return offsetY; }
+    public float getZoom()    { return zoom; }
 
-    public float getOffsetY() {
-        return offsetY;
-    }
-
-    public float getZoom() {
-        return zoom;
-    }
-
-    public void setOffsetX(float offsetX) {
-        this.offsetX = offsetX;
-    }
-
-    public void setOffsetY(float offsetY) {
-        this.offsetY = offsetY;
-    }
-
-    public void setZoom(float zoom) {
-        this.zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom));
-    }
-
-    /**
-     * Center the view on the given world pixel coordinates.
-     * Assumes a 1280x720 window.
-     */
     public void centerOn(float worldX, float worldY) {
         offsetX = 640f - worldX * zoom;
         offsetY = 360f - worldY * zoom;
