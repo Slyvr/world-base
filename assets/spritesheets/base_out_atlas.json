@@ -1437,7 +1437,11 @@
       "tags": [
         "grass_normal"
       ],
-      "constraints": []
+      "constraints": [
+        "br",
+        "mr",
+        "tr"
+      ]
     },
     {
       "id": 118,
