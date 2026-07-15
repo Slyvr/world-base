@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="output" path="bin/default"/>
+	<classpathentry output="bin/main" kind="src" path="src/main/java">
+		<attributes>
+			<attribute name="gradle_scope" value="main"/>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17/"/>
+	<classpathentry sourcepath="/home/mushroom/.gradle/caches/modules-2/files-2.1/com.badlogicgames.gdx/gdx/1.13.1/12dc3ca46a914fec543f6186a9cf17fa4a93c1b/gdx-1.13.1-sources.jar" kind="lib" path="/home/mushroom/.gradle/caches/modules-2/files-2.1/com.badlogicgames.gdx/gdx/1.13.1/734d9a5ca877bbce0c595dbdc3165fe6a22b7a30/gdx-1.13.1.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/home/mushroom/.gradle/caches/modules-2/files-2.1/com.badlogicgames.gdx/gdx-jnigen-loader/2.5.2/2a21b103d03be8d1ed81a021981376615f481cf5/gdx-jnigen-loader-2.5.2-sources.jar" kind="lib" path="/home/mushroom/.gradle/caches/modules-2/files-2.1/com.badlogicgames.gdx/gdx-jnigen-loader/2.5.2/f35e90affe07c46b4f5e5958a1a4c1820c4890e2/gdx-jnigen-loader-2.5.2.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+</classpath>
