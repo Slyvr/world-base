@@ -35,12 +35,12 @@ public class WorldScreen extends ScreenAdapter {
         );
 
         // Create ECS world with island generator
-        world = new World(1000, 1000, new IslandGenerator());
+        world = new World(100, 100, new IslandGenerator());
 
         // Create systems
         renderSystem = new RenderSystem(world.getEntityManager(), spritesheet);
         cameraSystem = new CameraSystem();
-        cameraSystem.centerOn(16000f, 16000f);
+        cameraSystem.centerOn(1600f, 1600f);
         Gdx.input.setInputProcessor(cameraSystem);
 
         // HUD
