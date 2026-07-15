@@ -141,7 +141,11 @@ public class AutoTileSystem {
                 // Remove if: constraints unknown, required neighbors missing,
                 // or open-side positions have grass (sprite expects water there)
                 boolean missingRequired = required == null || !active.containsAll(required);
-                boolean extraGrass = open != null && !Collections.disjoint(active, open);
+                // Open-sides check only for sprites with ≥5 constraints (edges and
+                // interior). Corner sprites (3-cons) naturally have open positions
+                // that are grass on the main island — that's expected, not an error.
+                boolean extraGrass = open != null && required.size() >= 5
+                                 && !Collections.disjoint(active, open);
                 if (missingRequired || extraGrass) {
                     toRemove.add(entity);
                 }
