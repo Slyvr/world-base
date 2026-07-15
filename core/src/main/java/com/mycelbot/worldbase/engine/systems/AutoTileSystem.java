@@ -122,7 +122,7 @@ public class AutoTileSystem {
         boolean changed = true;
         while (changed) {
             changed = false;
-            List<Entity> toRemove = new ArrayList<>();
+            List<Entity> toRetile = new ArrayList<>();
 
             for (Entity entity : em.getAllEntitiesWith(PositionComponent.class, TileComponent.class, AppearanceComponent.class)) {
                 TileComponent tc = em.getComponent(entity, TileComponent.class);
@@ -140,24 +140,66 @@ public class AutoTileSystem {
                     }
                 }
 
+                // Check if current sprite still fits
                 Set<String> required = spriteConstraints.get(app.spriteId);
                 String critical = spriteCritical.get(app.spriteId);
                 boolean missingRequired = required == null || !active.containsAll(required);
-                // Critical-open check: if the sprite expects water at a specific
-                // position (e.g. tc for top-edge), that position must not be grass.
                 boolean extraGrass = critical != null && active.contains(critical);
+
                 if (missingRequired || extraGrass) {
-                    toRemove.add(entity);
+                    toRetile.add(entity);
                 }
             }
 
-            for (Entity entity : toRemove) {
+            // Try to re-tile mismatched entities instead of immediately removing.
+            // If a new sprite fits their changed neighbors, they survive.
+            // Only delete if absolutely no sprite matches.
+            for (Entity entity : toRetile) {
                 PositionComponent pos = em.getComponent(entity, PositionComponent.class);
-                isGrass[pos.x][pos.y] = false;
-                em.destroyEntity(entity);
-                changed = true;
+
+                Set<String> active = new HashSet<>();
+                for (int i = 0; i < 8; i++) {
+                    int nx = pos.x + OFFSETS[i][0];
+                    int ny = pos.y + OFFSETS[i][1];
+                    if (nx >= 0 && nx < width && ny >= 0 && ny < height && isGrass[nx][ny]) {
+                        active.add(NAMES[i]);
+                    }
+                }
+
+                int newSprite = findBestMatch(active, candidates);
+                if (newSprite >= 0) {
+                    // Re-tiled successfully — assign new sprite
+                    em.getComponent(entity, AppearanceComponent.class).spriteId = newSprite;
+                    changed = true;
+                } else {
+                    // No sprite fits — this tile has no valid auto-tile pattern
+                    isGrass[pos.x][pos.y] = false;
+                    em.destroyEntity(entity);
+                    changed = true;
+                }
             }
         }
+    }
+
+    /**
+     * Find the best matching sprite for a given active constraint set.
+     * Returns the sprite ID, or -1 if no sprite fits.
+     */
+    private static int findBestMatch(Set<String> active, List<SpriteEntry> candidates) {
+        for (SpriteEntry entry : candidates) {
+            if (entry.constraints.isEmpty()) {
+                return active.isEmpty() ? entry.spriteId : -1;
+            }
+            if (active.containsAll(entry.constraints)) {
+                // Also verify the critical open position for ≥5-cons sprites
+                if (entry.constraints.size() >= 5) {
+                    String critical = findCriticalOpen(entry.constraints);
+                    if (critical != null && active.contains(critical)) continue;
+                }
+                return entry.spriteId;
+            }
+        }
+        return -1;
     }
 
     /**
