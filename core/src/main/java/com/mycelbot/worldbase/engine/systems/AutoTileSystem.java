@@ -101,18 +101,22 @@ public class AutoTileSystem {
         // their actual neighbors. After each removal pass, some remaining tiles
         // may lose neighbors and now also mismatch — repeat until stable.
         //
-        // Two checks per tile:
-        //  1) All of the sprite's required neighbors must be grass (constraints ⊆ active)
-        //  2) None of the sprite's open positions (positions NOT in its constraints)
-        //     should be grass — the sprite's texture expects water there.
+        // For edge sprites (5-cons) and concave corners (7-cons), check the
+        // "critical" open position — the one directly opposite the constrained
+        // face that the sprite's texture expects to be water:
+        //   id=86  top edge        → tc must be water
+        //   id=117 left edge       → ml must be water
+        //   id=119 right edge      → mr must be water
+        //   id=150 bottom edge     → bc must be water
+        //   id=22-55 concave corner → missing corner must be water
         Map<Integer, Set<String>> spriteConstraints = new HashMap<>();
-        Map<Integer, Set<String>> spriteOpens = new HashMap<>();
-        Set<String> allPositions = new HashSet<>(Arrays.asList(NAMES));
+        Map<Integer, String> spriteCritical = new HashMap<>();
         for (SpriteEntry entry : candidates) {
             spriteConstraints.put(entry.spriteId, entry.constraints);
-            Set<String> open = new HashSet<>(allPositions);
-            open.removeAll(entry.constraints);
-            spriteOpens.put(entry.spriteId, open);
+            // Determine the critical open position based on constraint pattern
+            if (entry.constraints.size() >= 5) {
+                spriteCritical.put(entry.spriteId, findCriticalOpen(entry.constraints));
+            }
         }
 
         boolean changed = true;
@@ -137,15 +141,11 @@ public class AutoTileSystem {
                 }
 
                 Set<String> required = spriteConstraints.get(app.spriteId);
-                Set<String> open = spriteOpens.get(app.spriteId);
-                // Remove if: constraints unknown, required neighbors missing,
-                // or open-side positions have grass (sprite expects water there)
+                String critical = spriteCritical.get(app.spriteId);
                 boolean missingRequired = required == null || !active.containsAll(required);
-                // Open-sides check only for sprites with ≥5 constraints (edges and
-                // interior). Corner sprites (3-cons) naturally have open positions
-                // that are grass on the main island — that's expected, not an error.
-                boolean extraGrass = open != null && required.size() >= 5
-                                 && !Collections.disjoint(active, open);
+                // Critical-open check: if the sprite expects water at a specific
+                // position (e.g. tc for top-edge), that position must not be grass.
+                boolean extraGrass = critical != null && active.contains(critical);
                 if (missingRequired || extraGrass) {
                     toRemove.add(entity);
                 }
@@ -158,6 +158,32 @@ public class AutoTileSystem {
                 changed = true;
             }
         }
+    }
+
+    /**
+     * For a sprite with ≥5 constraints, find the single critical open position
+     * that MUST be water for the sprite to be correct.
+     * <p>
+     * Edge sprites (5-cons): open positions form a row/column; the middle
+     * element is critical (e.g. tc for top-edge, ml for left-edge).
+     * Concave corners (7-cons): the single missing corner is critical.
+     */
+    private static String findCriticalOpen(Set<String> constraints) {
+        Set<String> all = new HashSet<>(Arrays.asList(NAMES));
+        all.removeAll(constraints); // this is the open set
+
+        if (all.size() == 1) {
+            // Concave corner — the single missing position
+            return all.iterator().next();
+        }
+
+        // Edge sprites — the open set is a line of 3; the middle one is critical.
+        // Lines: {tl,tc,tr}, {ml,_,mr}, {bl,bc,br}, {tl,ml,bl}, {tc,_,bc}, {tr,mr,br}
+        if (all.contains("tc")) return "tc";
+        if (all.contains("ml")) return "ml";
+        if (all.contains("mr")) return "mr";
+        if (all.contains("bc")) return "bc";
+        return null;
     }
 
     private boolean[][] buildGrassGrid(EntityManager em, int width, int height) {
