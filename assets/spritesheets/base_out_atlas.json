@@ -1049,7 +1049,9 @@
         "grass_normal"
       ],
       "constraints": [
-        "br"
+        "br",
+        "bc",
+        "mr"
       ]
     },
     {
@@ -1066,7 +1068,9 @@
       "constraints": [
         "bl",
         "bc",
-        "br"
+        "br",
+        "ml",
+        "mr"
       ]
     },
     {
@@ -1081,7 +1085,9 @@
         "grass_normal"
       ],
       "constraints": [
-        "bl"
+        "bl",
+        "ml",
+        "bc"
       ]
     },
     {
@@ -1440,7 +1446,9 @@
       "constraints": [
         "br",
         "mr",
-        "tr"
+        "tr",
+        "bc",
+        "tc"
       ]
     },
     {
@@ -1479,7 +1487,9 @@
       "constraints": [
         "bl",
         "ml",
-        "tl"
+        "tl",
+        "bc",
+        "tc"
       ]
     },
     {
@@ -1827,7 +1837,9 @@
         "grass_normal"
       ],
       "constraints": [
-        "tr"
+        "tr",
+        "mr",
+        "tc"
       ]
     },
     {
@@ -1844,7 +1856,9 @@
       "constraints": [
         "tl",
         "tc",
-        "tr"
+        "tr",
+        "ml",
+        "mr"
       ]
     },
     {
@@ -1859,7 +1873,9 @@
         "grass_normal"
       ],
       "constraints": [
-        "tl"
+        "tl",
+        "ml",
+        "tc"
       ]
     },
     {
@@ -4368,8 +4384,14 @@
       "y": 352,
       "title": "",
       "description": "",
-      "tags": [],
-      "constraints": []
+      "tags": [
+        "grass_water"
+      ],
+      "constraints": [
+        "br",
+        "mr",
+        "bc"
+      ]
     },
     {
       "id": 375,
@@ -4379,8 +4401,14 @@
       "y": 352,
       "title": "",
       "description": "",
-      "tags": [],
-      "constraints": []
+      "tags": [
+        "grass_water"
+      ],
+      "constraints": [
+        "bl",
+        "bc",
+        "ml"
+      ]
     },
     {
       "id": 376,
@@ -4732,8 +4760,19 @@
       "y": 384,
       "title": "",
       "description": "",
-      "tags": [],
-      "constraints": []
+      "tags": [
+        "grass_water"
+      ],
+      "constraints": [
+        "bl",
+        "ml",
+        "tl",
+        "tc",
+        "tr",
+        "mr",
+        "br",
+        "bc"
+      ]
     },
     {
       "id": 406,
@@ -4743,8 +4782,14 @@
       "y": 384,
       "title": "",
       "description": "",
-      "tags": [],
-      "constraints": []
+      "tags": [
+        "grass_water"
+      ],
+      "constraints": [
+        "tr",
+        "tc",
+        "mr"
+      ]
     },
     {
       "id": 407,
@@ -4754,8 +4799,14 @@
       "y": 384,
       "title": "",
       "description": "",
-      "tags": [],
-      "constraints": []
+      "tags": [
+        "grass_water"
+      ],
+      "constraints": [
+        "tl",
+        "ml",
+        "tc"
+      ]
     },
     {
       "id": 408,
@@ -5098,8 +5149,18 @@
       "y": 416,
       "title": "",
       "description": "",
-      "tags": [],
-      "constraints": []
+      "tags": [
+        "grass_water"
+      ],
+      "constraints": [
+        "tl",
+        "ml",
+        "bl",
+        "tc",
+        "tr",
+        "mr",
+        "bc"
+      ]
     },
     {
       "id": 438,
@@ -5109,8 +5170,16 @@
       "y": 416,
       "title": "",
       "description": "",
-      "tags": [],
-      "constraints": []
+      "tags": [
+        "grass_water"
+      ],
+      "constraints": [
+        "tl",
+        "tc",
+        "tr",
+        "mr",
+        "ml"
+      ]
     },
     {
       "id": 439,
@@ -5120,8 +5189,18 @@
       "y": 416,
       "title": "",
       "description": "",
-      "tags": [],
-      "constraints": []
+      "tags": [
+        "grass_water"
+      ],
+      "constraints": [
+        "ml",
+        "tl",
+        "tc",
+        "tr",
+        "mr",
+        "br",
+        "bc"
+      ]
     },
     {
       "id": 440,
@@ -5450,8 +5529,16 @@
       "y": 448,
       "title": "",
       "description": "",
-      "tags": [],
-      "constraints": []
+      "tags": [
+        "grass_water"
+      ],
+      "constraints": [
+        "bl",
+        "ml",
+        "tl",
+        "tc",
+        "bc"
+      ]
     },
     {
       "id": 470,
@@ -5472,8 +5559,16 @@
       "y": 448,
       "title": "",
       "description": "",
-      "tags": [],
-      "constraints": []
+      "tags": [
+        "grass_water"
+      ],
+      "constraints": [
+        "bc",
+        "tc",
+        "tr",
+        "mr",
+        "br"
+      ]
     },
     {
       "id": 472,
@@ -5802,8 +5897,18 @@
       "y": 480,
       "title": "",
       "description": "",
-      "tags": [],
-      "constraints": []
+      "tags": [
+        "grass_water"
+      ],
+      "constraints": [
+        "tl",
+        "tc",
+        "ml",
+        "bl",
+        "bc",
+        "br",
+        "mr"
+      ]
     },
     {
       "id": 502,
@@ -5813,8 +5918,16 @@
       "y": 480,
       "title": "",
       "description": "",
-      "tags": [],
-      "constraints": []
+      "tags": [
+        "grass_water"
+      ],
+      "constraints": [
+        "ml",
+        "bl",
+        "bc",
+        "br",
+        "mr"
+      ]
     },
     {
       "id": 503,
@@ -5824,8 +5937,18 @@
       "y": 480,
       "title": "",
       "description": "",
-      "tags": [],
-      "constraints": []
+      "tags": [
+        "grass_water"
+      ],
+      "constraints": [
+        "ml",
+        "bl",
+        "tc",
+        "tr",
+        "mr",
+        "br",
+        "bc"
+      ]
     },
     {
       "id": 504,
