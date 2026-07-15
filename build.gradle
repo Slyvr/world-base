@@ -1,0 +1,68 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        google()
+    }
+}
+
+plugins {
+    id 'java-library'
+    id 'eclipse'
+}
+
+allprojects {
+    apply plugin: 'java-library'
+    apply plugin: 'eclipse'
+
+    eclipse {
+        project {
+            comment = project.name + ' module'
+        }
+    }
+
+    java {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    repositories {
+        mavenCentral()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        google()
+    }
+}
+
+project(":core") {
+    dependencies {
+        api "com.badlogicgames.gdx:gdx:$gdxVersion"
+    }
+}
+
+project(":desktop") {
+    apply plugin: 'application'
+
+    application {
+        mainClass = 'com.mycelbot.worldbase.DesktopLauncher'
+    }
+
+    dependencies {
+        implementation project(":core")
+        api "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
+        api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+    }
+
+    eclipse {
+        classpath {
+            file.whenMerged { cp ->
+                cp.entries.findAll { it.path.contains('natives-desktop') }.each {
+                    it.nativeLibraryLocation = ''
+                }
+            }
+        }
+    }
+
+    run {
+        workingDir = rootProject.projectDir
+    }
+}
