@@ -15,85 +15,90 @@ import java.util.*;
  * the constraint data in the spritesheet JSON.
  * <p>
  * For each tile, inspects all 8 surrounding cells, builds a set of
- * neighbor positions where the same terrain type exists, then looks up
- * the sprite whose constraints exactly match that set.
+ * neighbor positions where the same terrain type exists, then finds
+ * the sprite whose constraints are the best subset match — the sprite
+ * with the largest constraint set that fits within the active set.
+ * <p>
+ * This handles straight edges (5-6 active constraints) where no exact
+ * sprite exists by falling back to the edge/row sprite (3 constraints).
  */
 public class AutoTileSystem {
 
-    /** Maps a constraint set (sorted) to sprite ID, per tag. */
-    private final Map<String, Map<String, Integer>> tileLookup;
+    // Sorted sprites per tag: largest constraint set first
+    private final Map<String, List<SpriteEntry>> tagSprites;
 
-    public AutoTileSystem(SpriteSheetLoader loader) {
-        this.tileLookup = new HashMap<>();
-        for (var sprite : loader.getSpritesByTag("grass_normal")) {
-            String key = constraintKey(sprite.constraints);
-            tileLookup.computeIfAbsent("grass_normal", k -> new HashMap<>())
-                      .put(key, sprite.id);
+    private static class SpriteEntry {
+        final Set<String> constraints;
+        final int spriteId;
+        SpriteEntry(Set<String> constraints, int spriteId) {
+            this.constraints = constraints;
+            this.spriteId = spriteId;
         }
     }
 
-    /** Build a canonical string key from a sorted array of constraint codes. */
-    private static String constraintKey(String[] constraints) {
-        String[] sorted = constraints.clone();
-        java.util.Arrays.sort(sorted);
-        return String.join(",", sorted);
+    public AutoTileSystem(SpriteSheetLoader loader) {
+        this.tagSprites = new HashMap<>();
+
+        for (var sprite : loader.getSpritesByTag("grass_normal")) {
+            Set<String> cons = new HashSet<>(Arrays.asList(sprite.constraints));
+            tagSprites.computeIfAbsent("grass_normal", k -> new ArrayList<>())
+                      .add(new SpriteEntry(cons, sprite.id));
+        }
+
+        // Sort largest constraint set first so we match the most specific sprite
+        for (List<SpriteEntry> list : tagSprites.values()) {
+            list.sort((a, b) -> Integer.compare(b.constraints.size(), a.constraints.size()));
+        }
     }
 
     /**
-     * Update all grass tiles in the world so their AppearanceComponent
-     * uses the correct edge/corner sprite based on 8-neighbor matching.
+     * Update all grass tiles so their AppearanceComponent uses the correct
+     * edge/corner sprite based on 8-neighbor matching.
      */
     public void autoTileGrass(EntityManager em, int width, int height) {
-        // Build a quick terrain grid: true = grass, false = other
         boolean[][] isGrass = buildGrassGrid(em, width, height);
+        List<SpriteEntry> candidates = tagSprites.get("grass_normal");
+        if (candidates == null || candidates.isEmpty()) return;
 
-        Map<String, Integer> grassLookup = tileLookup.get("grass_normal");
-        if (grassLookup == null || grassLookup.isEmpty()) return;
+        //               tl    tc    tr    ml    mr    bl    bc    br
+        int[][] offsets = {{-1,1},{0,1},{1,1},{-1,0},{1,0},{-1,-1},{0,-1},{1,-1}};
 
-        // Neighbor offsets in tile coordinates
-        // tl    tc    tr
-        //  ml  [ ]  mr
-        // bl    bc    br
-        String[] allPos = {"tl","tc","tr","ml","mr","bl","bc","br"};
-        int[][] offsets = {
-            {-1, 1}, {0, 1}, {1, 1},   // tl, tc, tr
-            {-1, 0},         {1, 0},   // ml,     mr
-            {-1,-1}, {0,-1}, {1,-1}    // bl, bc, br
-        };
-
-        // Collect all grass entities at Z=1
         for (Entity entity : em.getAllEntitiesWith(PositionComponent.class, TileComponent.class, AppearanceComponent.class)) {
             TileComponent tc = em.getComponent(entity, TileComponent.class);
             if (tc.type != TileType.GRASS) continue;
 
             PositionComponent pos = em.getComponent(entity, PositionComponent.class);
 
-            // Build constraint set for this tile's neighbors
-            List<String> active = new ArrayList<>();
+            // Build active constraint set
+            Set<String> active = new HashSet<>();
+            String[] names = {"tl","tc","tr","ml","mr","bl","bc","br"};
             for (int i = 0; i < 8; i++) {
                 int nx = pos.x + offsets[i][0];
                 int ny = pos.y + offsets[i][1];
                 if (nx >= 0 && nx < width && ny >= 0 && ny < height && isGrass[nx][ny]) {
-                    active.add(allPos[i]);
+                    active.add(names[i]);
                 }
             }
 
-            String key = constraintKey(active.toArray(new String[0]));
-            Integer spriteId = grassLookup.get(key);
-            if (spriteId != null) {
-                em.getComponent(entity, AppearanceComponent.class).spriteId = spriteId;
+            // Best subset match: first sprite whose constraints are fully contained in active.
+            // Only allow 1-constraint corner sprites when the tile genuinely has ≤2 neighbors
+            // (prevents a 5-neighbor edge tile from matching a corner sprite).
+            for (SpriteEntry entry : candidates) {
+                if (entry.constraints.size() <= 1 && active.size() > 2) continue;
+                if (active.containsAll(entry.constraints)) {
+                    em.getComponent(entity, AppearanceComponent.class).spriteId = entry.spriteId;
+                    break;
+                }
             }
         }
     }
 
-    /** Build a 2D boolean grid indicating which cells are grass. */
     private boolean[][] buildGrassGrid(EntityManager em, int width, int height) {
         boolean[][] grid = new boolean[width][height];
-
         for (Entity entity : em.getAllEntitiesWith(PositionComponent.class, TileComponent.class)) {
-            PositionComponent pos = em.getComponent(entity, PositionComponent.class);
             TileComponent tc = em.getComponent(entity, TileComponent.class);
             if (tc.type == TileType.GRASS) {
+                PositionComponent pos = em.getComponent(entity, PositionComponent.class);
                 grid[pos.x][pos.y] = true;
             }
         }
