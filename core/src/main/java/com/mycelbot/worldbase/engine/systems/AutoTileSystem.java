@@ -27,6 +27,10 @@ public class AutoTileSystem {
     // Sorted sprites per tag: largest constraint set first
     private final Map<String, List<SpriteEntry>> tagSprites;
 
+    //               tl    tc    tr    ml    mr    bl    bc    br
+    private static final int[][] OFFSETS = {{-1,1},{0,1},{1,1},{-1,0},{1,0},{-1,-1},{0,-1},{1,-1}};
+    private static final String[] NAMES = {"tl","tc","tr","ml","mr","bl","bc","br"};
+
     private static class SpriteEntry {
         final Set<String> constraints;
         final int spriteId;
@@ -60,9 +64,6 @@ public class AutoTileSystem {
         List<SpriteEntry> candidates = tagSprites.get("grass_normal");
         if (candidates == null || candidates.isEmpty()) return;
 
-        //               tl    tc    tr    ml    mr    bl    bc    br
-        int[][] offsets = {{-1,1},{0,1},{1,1},{-1,0},{1,0},{-1,-1},{0,-1},{1,-1}};
-
         for (Entity entity : em.getAllEntitiesWith(PositionComponent.class, TileComponent.class, AppearanceComponent.class)) {
             TileComponent tc = em.getComponent(entity, TileComponent.class);
             if (tc.type != TileType.GRASS) continue;
@@ -71,38 +72,69 @@ public class AutoTileSystem {
 
             // Build active constraint set
             Set<String> active = new HashSet<>();
-            String[] names = {"tl","tc","tr","ml","mr","bl","bc","br"};
             for (int i = 0; i < 8; i++) {
-                int nx = pos.x + offsets[i][0];
-                int ny = pos.y + offsets[i][1];
+                int nx = pos.x + OFFSETS[i][0];
+                int ny = pos.y + OFFSETS[i][1];
                 if (nx >= 0 && nx < width && ny >= 0 && ny < height && isGrass[nx][ny]) {
-                    active.add(names[i]);
+                    active.add(NAMES[i]);
                 }
             }
 
             // Best subset match: iterate sprites by constraint count descending.
-            // - 8-cons: full interior
-            // - 7-cons: concave corners (1 missing neighbor)
-            // - 3-cons: straight edges
-            // - 1-cons: convex corners
-            // - 0-cons: isolated tile (only match when active is empty)
-            int matched = 0;
             for (SpriteEntry entry : candidates) {
                 // 0-constraint sprites should only match truly isolated tiles
                 if (entry.constraints.isEmpty()) {
                     if (active.isEmpty()) {
                         em.getComponent(entity, AppearanceComponent.class).spriteId = entry.spriteId;
-                        matched = 1;
                     }
                     break;
                 }
                 if (active.containsAll(entry.constraints)) {
                     em.getComponent(entity, AppearanceComponent.class).spriteId = entry.spriteId;
-                    matched = 1;
                     break;
                 }
             }
             // If nothing matched, leave default sprite (full grass 118)
+        }
+
+        // Validation pass: remove grass tiles whose assigned sprite's constraints
+        // don't match their actual neighbors (e.g. full-grass sprite on an edge tile
+        // that fell through with no match, or an edge sprite where the wrong side is open).
+        Map<Integer, Set<String>> spriteConstraints = new HashMap<>();
+        for (SpriteEntry entry : candidates) {
+            spriteConstraints.put(entry.spriteId, entry.constraints);
+        }
+
+        List<Entity> toRemove = new ArrayList<>();
+
+        for (Entity entity : em.getAllEntitiesWith(PositionComponent.class, TileComponent.class, AppearanceComponent.class)) {
+            TileComponent tc = em.getComponent(entity, TileComponent.class);
+            if (tc.type != TileType.GRASS) continue;
+
+            PositionComponent pos = em.getComponent(entity, PositionComponent.class);
+            AppearanceComponent app = em.getComponent(entity, AppearanceComponent.class);
+
+            Set<String> active = new HashSet<>();
+            for (int i = 0; i < 8; i++) {
+                int nx = pos.x + OFFSETS[i][0];
+                int ny = pos.y + OFFSETS[i][1];
+                if (nx >= 0 && nx < width && ny >= 0 && ny < height && isGrass[nx][ny]) {
+                    active.add(NAMES[i]);
+                }
+            }
+
+            Set<String> required = spriteConstraints.get(app.spriteId);
+            // If we don't have constraint data for this sprite or its constraints
+            // don't fit the actual neighbors, remove the tile.
+            if (required == null || !active.containsAll(required)) {
+                toRemove.add(entity);
+            }
+        }
+
+        for (Entity entity : toRemove) {
+            PositionComponent pos = em.getComponent(entity, PositionComponent.class);
+            isGrass[pos.x][pos.y] = false;
+            em.destroyEntity(entity);
         }
     }
 
