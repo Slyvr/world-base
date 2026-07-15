@@ -1,16 +1,13 @@
 package com.mycelbot.worldbase.engine;
 
-import com.mycelbot.worldbase.engine.components.AppearanceComponent;
-import com.mycelbot.worldbase.engine.components.PositionComponent;
-import com.mycelbot.worldbase.engine.components.TileComponent;
 import com.mycelbot.worldbase.engine.ecs.EntityManager;
+import com.mycelbot.worldbase.engine.systems.WorldGenerator;
 
 /**
- * The game world — manages tile entities via an EntityManager.
+ * The game world — a grid of tile entities managed via EntityManager.
  * <p>
- * On creation, populates the grid with tile entities, each carrying
- * PositionComponent, AppearanceComponent, and TileComponent.
- * Future entities (players, items, etc.) can be added dynamically.
+ * Accepts a WorldGenerator to populate the grid, keeping the generation
+ * strategy pluggable and the World class decoupled from tile creation logic.
  */
 public class World {
 
@@ -18,23 +15,11 @@ public class World {
     private final int height;
     private final EntityManager entityManager;
 
-    public World(int width, int height) {
+    public World(int width, int height, WorldGenerator generator) {
         this.width = width;
         this.height = height;
         this.entityManager = new EntityManager();
-        populateTiles(TileType.GRASS);
-    }
-
-    /** Fill the grid with tile entities of the given type. */
-    private void populateTiles(TileType type) {
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                var entity = entityManager.createEntity();
-                entityManager.addComponent(entity, new PositionComponent(x, y));
-                entityManager.addComponent(entity, new TileComponent(type));
-                entityManager.addComponent(entity, new AppearanceComponent(type.getSpriteId()));
-            }
-        }
+        generator.generate(entityManager, width, height);
     }
 
     public int getWidth()  { return width; }

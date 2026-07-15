@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.mycelbot.worldbase.engine.World;
 import com.mycelbot.worldbase.engine.systems.CameraSystem;
+import com.mycelbot.worldbase.engine.systems.IslandGenerator;
 import com.mycelbot.worldbase.engine.systems.RenderSystem;
 import com.mycelbot.worldbase.util.SpriteSheetLoader;
 
@@ -33,13 +34,13 @@ public class WorldScreen extends ScreenAdapter {
             "spritesheets/base_out_atlas.json"
         );
 
-        // Create ECS world (populates tile entities)
-        world = new World(40, 40);
+        // Create ECS world with island generator
+        world = new World(1000, 1000, new IslandGenerator());
 
         // Create systems
         renderSystem = new RenderSystem(world.getEntityManager(), spritesheet);
         cameraSystem = new CameraSystem();
-        cameraSystem.centerOn(640f, 640f);
+        cameraSystem.centerOn(16000f, 16000f);
         Gdx.input.setInputProcessor(cameraSystem);
 
         // HUD
