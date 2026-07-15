@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>desktop</name>
+	<name>world-base-desktop</name>
 	<comment>desktop module</comment>
-	<projects/>
+	<projects>
+		<project>world-base-core</project>
+	</projects>
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
+		<nature>org.eclipse.buildship.core.gradleprojectnature</nature>
 	</natures>
 	<buildSpec>
 		<buildCommand>
