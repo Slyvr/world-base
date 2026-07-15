@@ -100,9 +100,19 @@ public class AutoTileSystem {
         // Iterative validation: remove tiles whose assigned sprite doesn't match
         // their actual neighbors. After each removal pass, some remaining tiles
         // may lose neighbors and now also mismatch — repeat until stable.
+        //
+        // Two checks per tile:
+        //  1) All of the sprite's required neighbors must be grass (constraints ⊆ active)
+        //  2) None of the sprite's open positions (positions NOT in its constraints)
+        //     should be grass — the sprite's texture expects water there.
         Map<Integer, Set<String>> spriteConstraints = new HashMap<>();
+        Map<Integer, Set<String>> spriteOpens = new HashMap<>();
+        Set<String> allPositions = new HashSet<>(Arrays.asList(NAMES));
         for (SpriteEntry entry : candidates) {
             spriteConstraints.put(entry.spriteId, entry.constraints);
+            Set<String> open = new HashSet<>(allPositions);
+            open.removeAll(entry.constraints);
+            spriteOpens.put(entry.spriteId, open);
         }
 
         boolean changed = true;
@@ -127,7 +137,12 @@ public class AutoTileSystem {
                 }
 
                 Set<String> required = spriteConstraints.get(app.spriteId);
-                if (required == null || !active.containsAll(required)) {
+                Set<String> open = spriteOpens.get(app.spriteId);
+                // Remove if: constraints unknown, required neighbors missing,
+                // or open-side positions have grass (sprite expects water there)
+                boolean missingRequired = required == null || !active.containsAll(required);
+                boolean extraGrass = open != null && !Collections.disjoint(active, open);
+                if (missingRequired || extraGrass) {
                     toRemove.add(entity);
                 }
             }
