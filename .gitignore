@@ -23,6 +23,12 @@
 build/
 .gradle/
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+# Eclipse (Buildship-generated - do not commit sub-project files)
+core/.classpath
+core/.project
+core/.settings/
+desktop/.classpath
+desktop/.project
+desktop/.settings/
 hs_err_pid*
 replay_pid*

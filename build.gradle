@@ -18,11 +18,6 @@ allprojects {
     eclipse {
         project {
             comment = project.name + ' module'
-            // Use unique project names to avoid folder-name collision when
-            // Buildship adds Gradle nature to the root project
-            if (project.name != rootProject.name) {
-                name = rootProject.name + '-' + project.name
-            }
             natures 'org.eclipse.buildship.core.gradleprojectnature'
         }
     }
@@ -59,9 +54,6 @@ project(":desktop") {
     }
 
     eclipse {
-        project {
-            referencedProjects 'world-base-core'
-        }
         classpath {
             file.whenMerged { cp ->
                 cp.entries.findAll { it.path.contains('natives-desktop') }.each {
