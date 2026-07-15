@@ -12,6 +12,8 @@ import com.mycelbot.worldbase.util.SimplexNoise;
  * <p>
  * Uses 2D simplex noise (fBm) combined with a radial center falloff to
  * create a natural-looking island with an irregular shoreline.
+ * A new random seed is used each generation so every run produces
+ * a different island shape.
  * <p>
  * Tuning parameters control island size, noise frequency, and shoreline
  * roughness — all configurable via constructor.
@@ -49,6 +51,9 @@ public class IslandGenerator extends WorldGenerator {
 
     @Override
     public void generate(EntityManager em, int width, int height) {
+        // Random seed per generation so every run produces a different island
+        SimplexNoise noiseGen = new SimplexNoise(System.currentTimeMillis());
+
         float cx = width / 2f;
         float cy = height / 2f;
         double maxDist = Math.sqrt(cx * cx + cy * cy);
@@ -61,7 +66,7 @@ public class IslandGenerator extends WorldGenerator {
                 em.addComponent(entity, new PositionComponent(x, y));
 
                 // Sample noise
-                double noise = SimplexNoise.fbm(x * frequency, y * frequency, octaves, 2.0, 0.5);
+                double n = noiseGen.fbm(x * frequency, y * frequency, octaves, 2.0, 0.5);
 
                 // Radial falloff: 1 at center, 0 at radius, negative beyond
                 double dx = x - cx;
@@ -70,7 +75,7 @@ public class IslandGenerator extends WorldGenerator {
                 double falloff = Math.max(0.0, 1.0 - dist * invRadius);
 
                 // Combined height: noise with center bias, then threshold
-                double h = noise * 0.5 + falloff * 1.0 - 0.25;
+                double h = n * 0.5 + falloff * 1.0 - 0.25;
 
                 TileType type = h > threshold ? TileType.GRASS : TileType.WATER;
 
