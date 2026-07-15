@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.mycelbot.worldbase.engine.World;
+import com.mycelbot.worldbase.engine.systems.AutoTileSystem;
 import com.mycelbot.worldbase.engine.systems.CameraSystem;
 import com.mycelbot.worldbase.engine.systems.IslandGenerator;
 import com.mycelbot.worldbase.engine.systems.RenderSystem;
@@ -36,6 +37,10 @@ public class WorldScreen extends ScreenAdapter {
 
         // Create ECS world with island generator
         world = new World(100, 100, new IslandGenerator());
+
+        // Auto-tile grass tiles to use correct edge/corner sprites
+        new AutoTileSystem(spritesheet).autoTileGrass(
+            world.getEntityManager(), world.getWidth(), world.getHeight());
 
         // Create systems
         renderSystem = new RenderSystem(world.getEntityManager(), spritesheet);

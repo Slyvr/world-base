@@ -7,7 +7,9 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -43,8 +45,9 @@ public class SpriteSheetLoader {
         public final String title;
         public final String description;
         public final String[] tags;
+        public final String[] constraints;
 
-        SpriteData(int id, int row, int col, int x, int y, String title, String description, String[] tags) {
+        SpriteData(int id, int row, int col, int x, int y, String title, String description, String[] tags, String[] constraints) {
             this.id = id;
             this.row = row;
             this.col = col;
@@ -53,6 +56,7 @@ public class SpriteSheetLoader {
             this.title = title;
             this.description = description;
             this.tags = tags;
+            this.constraints = constraints;
         }
     }
 
@@ -99,7 +103,20 @@ public class SpriteSheetLoader {
                 tags = new String[0];
             }
 
-            map.put(id, new SpriteData(id, row, col, x, y, title, description, tags));
+            // Parse constraints array
+            JsonValue consArray = s.get("constraints");
+            String[] constraints;
+            if (consArray != null && consArray.size > 0) {
+                constraints = new String[consArray.size];
+                int i = 0;
+                for (JsonValue c = consArray.child; c != null; c = c.next) {
+                    constraints[i++] = c.asString();
+                }
+            } else {
+                constraints = new String[0];
+            }
+
+            map.put(id, new SpriteData(id, row, col, x, y, title, description, tags, constraints));
         }
 
         return map;
@@ -120,6 +137,22 @@ public class SpriteSheetLoader {
      */
     public SpriteData getSpriteData(int spriteId) {
         return spriteDataMap.get(spriteId);
+    }
+
+    /**
+     * Return all sprites that have the given tag.
+     */
+    public List<SpriteData> getSpritesByTag(String tag) {
+        List<SpriteData> result = new ArrayList<>();
+        for (SpriteData data : spriteDataMap.values()) {
+            for (String t : data.tags) {
+                if (tag.equals(t)) {
+                    result.add(data);
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     public Texture getTexture() {
