@@ -154,7 +154,7 @@ public class MainMenuScreen extends ScreenAdapter {
     private void handleButton(int index) {
         switch (index) {
             case 0: // New Game
-                game.setScreen(new WorldScreen(config));
+                game.setScreen(new WorldScreen(game, config));
                 dispose();
                 break;
             case 1: // Load Game — disabled
