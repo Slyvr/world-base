@@ -10,7 +10,7 @@ public class WorldBaseGame extends Game {
 
     @Override
     public void create() {
-        setScreen(new WorldScreen());
+        setScreen(new SplashScreen(this));
     }
 
     @Override
