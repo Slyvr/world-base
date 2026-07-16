@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.mycelbot.worldbase.config.GameConfig;
 
 /**
  * Main menu screen with New Game, Load Game, Settings, and Exit buttons.
@@ -19,6 +20,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 public class MainMenuScreen extends ScreenAdapter {
 
     private final WorldBaseGame game;
+    private final GameConfig config;
     private SpriteBatch batch;
     private ShapeRenderer shapeRenderer;
     private BitmapFont titleFont;
@@ -45,8 +47,9 @@ public class MainMenuScreen extends ScreenAdapter {
     private static final Color ENABLED_TEXT  = Color.WHITE;
     private static final Color TITLE_COLOR   = new Color(1f, 0.75f, 0.25f, 1f);
 
-    public MainMenuScreen(WorldBaseGame game) {
+    public MainMenuScreen(WorldBaseGame game, GameConfig config) {
         this.game = game;
+        this.config = config;
     }
 
     @Override
@@ -151,7 +154,7 @@ public class MainMenuScreen extends ScreenAdapter {
     private void handleButton(int index) {
         switch (index) {
             case 0: // New Game
-                game.setScreen(new WorldScreen());
+                game.setScreen(new WorldScreen(config));
                 dispose();
                 break;
             case 1: // Load Game — disabled

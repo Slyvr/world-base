@@ -1,0 +1,22 @@
+{
+  "_comment": "WorldBase game configuration — copy to config/worldbase-config.json and edit.",
+  "worldWidth": 100,
+  "worldHeight": 100,
+  "tileSize": 32,
+  "maxEntities": 50000,
+  "generatorType": "island",
+  "noiseFrequency": 0.04,
+  "noiseOctaves": 4,
+  "islandRadiusFraction": 0.45,
+  "islandThreshold": 0.0,
+  "spritesheetImage": "spritesheets/base_out_atlas.png",
+  "spritesheetData": "spritesheets/base_out_atlas.json",
+  "cameraMinZoom": 0.2,
+  "cameraMaxZoom": 4.0,
+  "cameraZoomSpeed": 0.1,
+  "clearColorR": 0.15,
+  "clearColorG": 0.15,
+  "clearColorB": 0.20,
+  "clearColorA": 1.0,
+  "hudTitle": "WorldBase [ECS]  |  Middle-click: Pan  |  Scroll: Zoom"
+}

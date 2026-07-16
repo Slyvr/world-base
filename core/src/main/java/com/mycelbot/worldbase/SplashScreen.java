@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.mycelbot.worldbase.config.GameConfig;
 
 /**
  * Splash screen shown for 3 seconds before transitioning to the main menu.
@@ -17,6 +18,7 @@ public class SplashScreen extends ScreenAdapter {
     private static final float FADE_DURATION = 0.5f;
 
     private final WorldBaseGame game;
+    private final GameConfig config;
     private SpriteBatch batch;
     private BitmapFont titleFont;
     private BitmapFont subtitleFont;
@@ -24,8 +26,9 @@ public class SplashScreen extends ScreenAdapter {
     private GlyphLayout subtitleLayout;
     private float elapsed;
 
-    public SplashScreen(WorldBaseGame game) {
+    public SplashScreen(WorldBaseGame game, GameConfig config) {
         this.game = game;
+        this.config = config;
     }
 
     @Override
@@ -77,7 +80,7 @@ public class SplashScreen extends ScreenAdapter {
         batch.end();
 
         if (elapsed >= SPLASH_DURATION) {
-            game.setScreen(new MainMenuScreen(game));
+            game.setScreen(new MainMenuScreen(game, config));
             dispose();
         }
     }

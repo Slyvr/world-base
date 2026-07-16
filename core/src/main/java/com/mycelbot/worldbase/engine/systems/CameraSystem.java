@@ -3,11 +3,14 @@ package com.mycelbot.worldbase.engine.systems;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
+import com.mycelbot.worldbase.config.GameConfig;
 
 /**
  * System that handles camera input and maintains view state.
  * - Middle-click + drag: pan
  * - Scroll wheel: zoom (centered on cursor)
+ * <p>
+ * Zoom limits and speed are pulled from GameConfig.
  */
 public class CameraSystem extends InputAdapter {
 
@@ -15,12 +18,18 @@ public class CameraSystem extends InputAdapter {
     private float offsetY = 0f;
     private float zoom = 1.0f;
 
-    private static final float MIN_ZOOM = 0.2f;
-    private static final float MAX_ZOOM = 4.0f;
-    private static final float ZOOM_SPEED = 0.1f;
+    private final float minZoom;
+    private final float maxZoom;
+    private final float zoomSpeed;
 
     private int lastMouseX, lastMouseY;
     private boolean dragging = false;
+
+    public CameraSystem(GameConfig config) {
+        this.minZoom   = config.getCameraMinZoom();
+        this.maxZoom   = config.getCameraMaxZoom();
+        this.zoomSpeed = config.getCameraZoomSpeed();
+    }
 
     @Override
     public boolean mouseMoved(int screenX, int screenY) {
@@ -65,7 +74,7 @@ public class CameraSystem extends InputAdapter {
     public boolean scrolled(float amountX, float amountY) {
         float worldX = (lastMouseX - offsetX) / zoom;
         float worldY = (lastMouseY - offsetY) / zoom;
-        zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom - amountY * ZOOM_SPEED));
+        zoom = Math.max(minZoom, Math.min(maxZoom, zoom - amountY * zoomSpeed));
         offsetX = lastMouseX - worldX * zoom;
         offsetY = lastMouseY - worldY * zoom;
         return true;

@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.mycelbot.worldbase.config.GameConfig;
 import com.mycelbot.worldbase.engine.components.AppearanceComponent;
 import com.mycelbot.worldbase.engine.components.PositionComponent;
 import com.mycelbot.worldbase.engine.components.ZComponent;
@@ -20,17 +21,20 @@ import java.util.List;
  * System that renders entities with Position + Appearance + Z components.
  * Entities are sorted by Z (ascending) so lower layers draw first.
  * Only tiles within the viewport are drawn.
+ * <p>
+ * Tile size is pulled from GameConfig.
  */
 public class RenderSystem {
 
-    private static final int TILE_SIZE = 32;
+    private final int tileSize;
 
     private final SpriteBatch batch;
     private final OrthographicCamera camera;
     private final SpriteSheetLoader spritesheet;
     private final EntityManager entityManager;
 
-    public RenderSystem(EntityManager entityManager, SpriteSheetLoader spritesheet) {
+    public RenderSystem(EntityManager entityManager, SpriteSheetLoader spritesheet, GameConfig config) {
+        this.tileSize = config.getTileSize();
         this.batch = new SpriteBatch();
         this.camera = new OrthographicCamera();
         this.spritesheet = spritesheet;
@@ -52,10 +56,10 @@ public class RenderSystem {
 
     private void drawVisibleEntities(float offsetX, float offsetY, float zoom) {
         // Viewport bounds in tile space
-        float viewLeft  = -offsetX / (TILE_SIZE * zoom);
-        float viewTop   = -offsetY / (TILE_SIZE * zoom);
-        float viewRight = viewLeft + Gdx.graphics.getWidth()  / (TILE_SIZE * zoom);
-        float viewBottom = viewTop + Gdx.graphics.getHeight() / (TILE_SIZE * zoom);
+        float viewLeft  = -offsetX / (tileSize * zoom);
+        float viewTop   = -offsetY / (tileSize * zoom);
+        float viewRight = viewLeft + Gdx.graphics.getWidth()  / (tileSize * zoom);
+        float viewBottom = viewTop + Gdx.graphics.getHeight() / (tileSize * zoom);
 
         Collection<Entity> candidates = entityManager.getAllEntitiesWith(
             PositionComponent.class, AppearanceComponent.class, ZComponent.class);
@@ -83,9 +87,9 @@ public class RenderSystem {
             TextureRegion region = spritesheet.getRegion(app.spriteId);
             if (region == null) continue;
 
-            float drawX = pos.x * TILE_SIZE * zoom + offsetX;
-            float drawY = pos.y * TILE_SIZE * zoom + offsetY;
-            batch.draw(region, drawX, drawY, TILE_SIZE * zoom, TILE_SIZE * zoom);
+            float drawX = pos.x * tileSize * zoom + offsetX;
+            float drawY = pos.y * tileSize * zoom + offsetY;
+            batch.draw(region, drawX, drawY, tileSize * zoom, tileSize * zoom);
         }
     }
 

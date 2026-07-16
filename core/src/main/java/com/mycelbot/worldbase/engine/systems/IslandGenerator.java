@@ -1,5 +1,6 @@
 package com.mycelbot.worldbase.engine.systems;
 
+import com.mycelbot.worldbase.config.GameConfig;
 import com.mycelbot.worldbase.engine.TileType;
 import com.mycelbot.worldbase.engine.components.AppearanceComponent;
 import com.mycelbot.worldbase.engine.components.PositionComponent;
@@ -13,9 +14,12 @@ import com.mycelbot.worldbase.util.SimplexNoise;
  * <p>
  * Two render layers:
  * <ul>
- *   <li>Z=0 — full 100x100 water grid (background)</li>
+ *   <li>Z=0 — full width×height water grid (background)</li>
  *   <li>Z=1 — grass island tiles from noise + radial falloff</li>
  * </ul>
+ * <p>
+ * All tunable parameters (frequency, octaves, radius, threshold) are
+ * taken from GameConfig so you can tweak world generation without recompiling.
  */
 public class IslandGenerator extends WorldGenerator {
 
@@ -26,6 +30,15 @@ public class IslandGenerator extends WorldGenerator {
 
     public IslandGenerator() {
         this(0.04, 4, 0.45, 0.0);
+    }
+
+    public IslandGenerator(GameConfig config) {
+        this(
+            config.getNoiseFrequency(),
+            config.getNoiseOctaves(),
+            config.getIslandRadiusFraction(),
+            config.getIslandThreshold()
+        );
     }
 
     public IslandGenerator(double frequency, int octaves, double radiusFraction, double threshold) {
