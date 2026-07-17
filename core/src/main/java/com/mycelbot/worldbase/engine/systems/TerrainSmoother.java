@@ -1,6 +1,8 @@
 package com.mycelbot.worldbase.engine.systems;
 
-import com.mycelbot.worldbase.engine.components.*;
+import com.mycelbot.worldbase.engine.TileType;
+import com.mycelbot.worldbase.engine.components.PositionComponent;
+import com.mycelbot.worldbase.engine.components.TileComponent;
 import com.mycelbot.worldbase.engine.ecs.Entity;
 import com.mycelbot.worldbase.engine.ecs.EntityManager;
 
@@ -8,80 +10,74 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Post-processes generated terrain to remove thin grass features
- * (isolated tiles, pairs, narrow peninsulas) for a cleaner shoreline.
+ * Post-processes generated terrain to remove unstable grass tiles.
  * <p>
- * Runs one or more passes. Each pass removes grass tiles that have
- * fewer grass neighbors than the configured threshold.
+ * A grass tile survives only if it has grass neighbours in at least
+ * two perpendicular cardinal directions — e.g. top+right, bottom+left,
+ * top+left, or bottom+right. Opposite-only pairs (top+bottom, left+right)
+ * and single-neighbour tiles are removed.
  * <p>
- * Multi-pass example (default):
- * <ol>
- *   <li>Remove tiles with ≤1 neighbor — kills singles and pairs</li>
- *   <li>Remove tiles with ≤2 neighbors — kills narrow peninsulas</li>
- * </ol>
+ * Runs iteratively until stable, so removing one tile may trigger
+ * cascading removal of its neighbours.
  */
 public class TerrainSmoother {
 
-    private final int[] thresholds;
-
-    /** Default: two-pass smoothing (≤1 then ≤2). */
-    public TerrainSmoother() {
-        this(1, 2);
-    }
+    // Cardinal offsets: tc, bc, ml, mr
+    private static final int[] CX = { 0,  0, -1,  1};
+    private static final int[] CY = { 1, -1,  0,  0};
 
     /**
-     * @param thresholds One or more neighbor-count thresholds. Each pass
-     *                   removes grass tiles whose neighbor count ≤ this value.
-     */
-    public TerrainSmoother(int... thresholds) {
-        this.thresholds = thresholds;
-    }
-
-    /**
-     * Remove thin grass features from the world.
-     * Must be called before auto-tiling.
+     * Remove grass tiles that lack at least two perpendicular edges
+     * connecting to other grass tiles. Iterates until stable.
      */
     public void smooth(EntityManager em, int width, int height) {
-        //               tl    tc    tr    ml    mr    bl    bc    br
-        int[][] offsets = {{-1,1},{0,1},{1,1},{-1,0},{1,0},{-1,-1},{0,-1},{1,-1}};
-
         boolean[][] isGrass = buildGrid(em, width, height);
 
-        for (int threshold : thresholds) {
+        boolean changed = true;
+        while (changed) {
+            changed = false;
             List<Entity> toRemove = new ArrayList<>();
 
-            for (Entity entity : em.getAllEntitiesWith(PositionComponent.class, TileComponent.class)) {
+            for (Entity entity : em.getAllEntitiesWith(
+                    PositionComponent.class, TileComponent.class)) {
                 TileComponent tc = em.getComponent(entity, TileComponent.class);
-                if (tc.type != com.mycelbot.worldbase.engine.TileType.GRASS) continue;
-
+                if (tc.type != TileType.GRASS) continue;
                 PositionComponent pos = em.getComponent(entity, PositionComponent.class);
-                int count = 0;
-                for (int[] off : offsets) {
-                    int nx = pos.x + off[0];
-                    int ny = pos.y + off[1];
-                    if (nx >= 0 && nx < width && ny >= 0 && ny < height && isGrass[nx][ny]) {
-                        count++;
-                    }
-                }
-                if (count <= threshold) {
+
+                int x = pos.x;
+                int y = pos.y;
+
+                // Sample 4 cardinal neighbours
+                boolean top    = y + 1 < height && isGrass[x][y + 1];
+                boolean bottom = y - 1 >= 0    && isGrass[x][y - 1];
+                boolean left   = x - 1 >= 0    && isGrass[x - 1][y];
+                boolean right  = x + 1 < width && isGrass[x + 1][y];
+
+                // Check for at least one perpendicular pair
+                boolean valid = (top && left) || (top && right)
+                             || (bottom && left) || (bottom && right);
+
+                if (!valid) {
                     toRemove.add(entity);
                 }
             }
 
-            // Remove marked tiles — the Z=0 water entity underneath remains
+            // Remove marked tiles and update grid
             for (Entity entity : toRemove) {
                 PositionComponent pos = em.getComponent(entity, PositionComponent.class);
                 isGrass[pos.x][pos.y] = false;
                 em.destroyEntity(entity);
+                changed = true;
             }
         }
     }
 
     private boolean[][] buildGrid(EntityManager em, int width, int height) {
         boolean[][] grid = new boolean[width][height];
-        for (Entity entity : em.getAllEntitiesWith(PositionComponent.class, TileComponent.class)) {
+        for (Entity entity : em.getAllEntitiesWith(
+                PositionComponent.class, TileComponent.class)) {
             TileComponent tc = em.getComponent(entity, TileComponent.class);
-            if (tc.type == com.mycelbot.worldbase.engine.TileType.GRASS) {
+            if (tc.type == TileType.GRASS) {
                 PositionComponent pos = em.getComponent(entity, PositionComponent.class);
                 grid[pos.x][pos.y] = true;
             }
