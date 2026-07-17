@@ -4,6 +4,11 @@ import com.mycelbot.worldbase.config.GameConfig;
 import com.mycelbot.worldbase.engine.SingleIsland;
 import com.mycelbot.worldbase.util.SimplexNoise;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
+
 /**
  * Generates a single island from noise + radial falloff, then smooths
  * its edges (perpendicular-edge rule) and trims to its bounding box.
@@ -74,31 +79,71 @@ public class SingleIslandGenerator {
         // Smooth edges with perpendicular-edge rule
         boolean[][] smoothed = smooth(raw, genSize, genSize);
 
-        // Find bounding box
-        int minX = genSize, minY = genSize, maxX = 0, maxY = 0;
-        int count = 0;
+        // Find all connected components (4-direction), keep only the largest
+        boolean[][] visited = new boolean[genSize][genSize];
+        int[] dx = { 0,  0, -1,  1};
+        int[] dy = { 1, -1,  0,  0};
+
+        List<int[]> largestComponent = new ArrayList<>();
+
         for (int x = 0; x < genSize; x++) {
             for (int y = 0; y < genSize; y++) {
-                if (smoothed[x][y]) {
-                    if (x < minX) minX = x;
-                    if (x > maxX) maxX = x;
-                    if (y < minY) minY = y;
-                    if (y > maxY) maxY = y;
-                    count++;
+                if (!smoothed[x][y] || visited[x][y]) continue;
+
+                // BFS this component
+                List<int[]> component = new ArrayList<>();
+                Queue<int[]> queue = new ArrayDeque<>();
+                queue.add(new int[]{x, y});
+                visited[x][y] = true;
+
+                while (!queue.isEmpty()) {
+                    int[] tile = queue.poll();
+                    component.add(tile);
+
+                    for (int d = 0; d < 4; d++) {
+                        int nx = tile[0] + dx[d];
+                        int ny = tile[1] + dy[d];
+                        if (nx >= 0 && nx < genSize && ny >= 0 && ny < genSize
+                                && smoothed[nx][ny] && !visited[nx][ny]) {
+                            visited[nx][ny] = true;
+                            queue.add(new int[]{nx, ny});
+                        }
+                    }
+                }
+
+                if (component.size() > largestComponent.size()) {
+                    largestComponent = component;
                 }
             }
         }
 
-        // Trim to bounding box (defensive if somehow empty)
+        int count = largestComponent.size();
+
+        // Defensive: empty island
         if (count == 0) {
             return new SingleIsland(new boolean[1][1], 1, 1, 0);
+        }
+
+        // Find bounding box of the largest component only
+        int minX = genSize, minY = genSize, maxX = 0, maxY = 0;
+        for (int[] tile : largestComponent) {
+            if (tile[0] < minX) minX = tile[0];
+            if (tile[0] > maxX) maxX = tile[0];
+            if (tile[1] < minY) minY = tile[1];
+            if (tile[1] > maxY) maxY = tile[1];
+        }
+
+        // Trim to bounding box — only largest component's tiles kept
+        boolean[][] grid = new boolean[genSize][genSize];
+        for (int[] tile : largestComponent) {
+            grid[tile[0]][tile[1]] = true;
         }
 
         int bw = maxX - minX + 1;
         int bh = maxY - minY + 1;
         boolean[][] trimmed = new boolean[bw][bh];
         for (int x = minX; x <= maxX; x++) {
-            System.arraycopy(smoothed[x], minY, trimmed[x - minX], 0, bh);
+            System.arraycopy(grid[x], minY, trimmed[x - minX], 0, bh);
         }
 
         return new SingleIsland(trimmed, bw, bh, count);
