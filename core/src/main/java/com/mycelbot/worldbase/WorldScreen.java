@@ -16,6 +16,7 @@ import com.mycelbot.worldbase.engine.World;
 import com.mycelbot.worldbase.engine.systems.AutoTileSystem;
 import com.mycelbot.worldbase.engine.systems.CameraSystem;
 import com.mycelbot.worldbase.engine.systems.TerrainSmoother;
+import com.mycelbot.worldbase.engine.systems.DiagonalCleaner;
 import com.mycelbot.worldbase.engine.systems.IslandGenerator;
 import com.mycelbot.worldbase.engine.systems.RenderSystem;
 import com.mycelbot.worldbase.util.SpriteSheetLoader;
@@ -130,6 +131,10 @@ public class WorldScreen extends ScreenAdapter {
 
         // Smooth terrain: remove thin grass features before auto-tiling
         new TerrainSmoother().smooth(
+            world.getEntityManager(), world.getWidth(), world.getHeight());
+
+        // Clean diagonal-only grass adjacencies that can't auto-tile cleanly
+        new DiagonalCleaner().clean(
             world.getEntityManager(), world.getWidth(), world.getHeight());
 
         // Auto-tile grass tiles to use correct edge/corner sprites
