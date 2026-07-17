@@ -9,8 +9,10 @@ import com.badlogic.gdx.utils.JsonValue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Loads a spritesheet PNG and its associated JSON metadata.
@@ -130,47 +132,42 @@ public class SpriteSheetLoader {
             spriteDataMap.put(id, sd);
         }
 
-        // ── Parse groups and build category→sprites index ──
+        // ── Build category→sprites index from groups AND individual terrainCategory ──
+        // Collect unique sprite IDs per category (dedup sprites in both a group and individual)
+        Map<String, Set<Integer>> catIds = new HashMap<>();
+
+        // From groups
         JsonValue groups = root.get("groups");
         if (groups != null) {
-            // Collect sprites per category from groups
-            // sprites that are members of a group "inherit" that group's terrainCategory
-            Map<String, List<int[]>> catCells = new HashMap<>();
-
             for (JsonValue g = groups.child; g != null; g = g.next) {
                 String cat = g.getString("terrainCategory", "");
                 if (cat.isEmpty()) continue;
-
                 JsonValue cells = g.get("cells");
                 if (cells == null) continue;
-
-                List<int[]> cellList = catCells.computeIfAbsent(cat, k -> new ArrayList<>());
+                Set<Integer> ids = catIds.computeIfAbsent(cat, k -> new HashSet<>());
                 for (JsonValue c = cells.child; c != null; c = c.next) {
-                    cellList.add(new int[]{c.getInt("row"), c.getInt("col")});
-                }
-            }
-
-            // Resolve cells to SpriteData
-            for (Map.Entry<String, List<int[]>> entry : catCells.entrySet()) {
-                List<SpriteData> spriteList = new ArrayList<>();
-                for (int[] cell : entry.getValue()) {
-                    int id = cell[0] * 32 + cell[1]; // row * columns + col
-                    SpriteData sd = spriteDataMap.get(id);
-                    if (sd != null) {
-                        spriteList.add(sd);
-                    }
-                }
-                if (!spriteList.isEmpty()) {
-                    categorySprites.put(entry.getKey(), spriteList);
+                    ids.add(c.getInt("row") * 32 + c.getInt("col"));
                 }
             }
         }
 
-        // Also index individual sprites that have a terrainCategory set on them
+        // From individual sprites with terrainCategory set
         for (SpriteData sd : spriteDataMap.values()) {
             if (!sd.terrainCategory.isEmpty()) {
-                categorySprites.computeIfAbsent(sd.terrainCategory, k -> new ArrayList<>()).add(sd);
+                catIds.computeIfAbsent(sd.terrainCategory, k -> new HashSet<>()).add(sd.id);
             }
+        }
+
+        // Resolve IDs to SpriteData, sorted by ID for deterministic order
+        for (Map.Entry<String, Set<Integer>> entry : catIds.entrySet()) {
+            List<SpriteData> catList = new ArrayList<>();
+            List<Integer> sorted = new ArrayList<>(entry.getValue());
+            sorted.sort(null); // natural order (integer)
+            for (int id : sorted) {
+                SpriteData sd = spriteDataMap.get(id);
+                if (sd != null) catList.add(sd);
+            }
+            categorySprites.put(entry.getKey(), catList);
         }
     }
 

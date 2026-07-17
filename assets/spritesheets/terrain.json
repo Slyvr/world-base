@@ -3527,7 +3527,20 @@
       "x": 160,
       "y": 352,
       "title": "",
-      "description": ""
+      "description": "",
+      "terrainCategory": "grass",
+      "collectionName": "",
+      "tags": [],
+      "constraints": [
+        "tl",
+        "tc",
+        "tr",
+        "ml",
+        "bl",
+        "bc",
+        "br",
+        "mr"
+      ]
     },
     {
       "id": 358,
