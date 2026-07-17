@@ -1205,10 +1205,9 @@
       "y": 96,
       "title": "water",
       "description": "",
+      "terrainCategory": "water",
       "collectionName": "",
-      "tags": [
-        "water"
-      ],
+      "tags": [],
       "constraints": [
         "tl",
         "tc",
@@ -1833,10 +1832,9 @@
       "y": 160,
       "title": "",
       "description": "",
+      "terrainCategory": "water",
       "collectionName": "",
-      "tags": [
-        "water"
-      ],
+      "tags": [],
       "constraints": [
         "tc",
         "tr",
@@ -1856,10 +1854,9 @@
       "y": 160,
       "title": "",
       "description": "",
+      "terrainCategory": "water",
       "collectionName": "",
-      "tags": [
-        "water"
-      ],
+      "tags": [],
       "constraints": [
         "tl",
         "tc",
@@ -1879,10 +1876,9 @@
       "y": 160,
       "title": "",
       "description": "",
+      "terrainCategory": "water",
       "collectionName": "",
-      "tags": [
-        "water"
-      ],
+      "tags": [],
       "constraints": [
         "tl",
         "tc",
@@ -1919,10 +1915,7 @@
       "x": 0,
       "y": 192,
       "title": "",
-      "description": "",
-      "tags": [
-        "grass_normal"
-      ]
+      "description": ""
     },
     {
       "id": 193,
@@ -1940,9 +1933,6 @@
         "bl",
         "bc",
         "mr"
-      ],
-      "tags": [
-        "grass_normal"
       ]
     },
     {
@@ -1961,9 +1951,6 @@
         "mr",
         "br",
         "bc"
-      ],
-      "tags": [
-        "grass_normal"
       ]
     },
     {
@@ -2234,10 +2221,7 @@
       "x": 0,
       "y": 224,
       "title": "",
-      "description": "",
-      "tags": [
-        "grass_normal"
-      ]
+      "description": ""
     },
     {
       "id": 225,
@@ -2255,9 +2239,6 @@
         "bc",
         "br",
         "mr"
-      ],
-      "tags": [
-        "grass_normal"
       ]
     },
     {
@@ -2276,9 +2257,6 @@
         "bc",
         "br",
         "tc"
-      ],
-      "tags": [
-        "grass_normal"
       ]
     },
     {
@@ -2554,9 +2532,6 @@
         "mr",
         "br",
         "bc"
-      ],
-      "tags": [
-        "grass_normal"
       ]
     },
     {
@@ -2573,9 +2548,6 @@
         "bc",
         "br",
         "bl"
-      ],
-      "tags": [
-        "grass_normal"
       ]
     },
     {
@@ -2590,9 +2562,6 @@
         "ml",
         "bl",
         "bc"
-      ],
-      "tags": [
-        "grass_normal"
       ]
     },
     {
@@ -2870,9 +2839,6 @@
         "mr",
         "br",
         "bc"
-      ],
-      "tags": [
-        "grass_normal"
       ]
     },
     {
@@ -2881,7 +2847,7 @@
       "col": 1,
       "x": 32,
       "y": 288,
-      "title": "",
+      "title": "grass",
       "description": "",
       "constraints": [
         "tl",
@@ -2893,9 +2859,9 @@
         "br",
         "tc"
       ],
-      "tags": [
-        "grass_normal"
-      ]
+      "terrainCategory": "",
+      "collectionName": "",
+      "tags": []
     },
     {
       "id": 290,
@@ -2911,9 +2877,6 @@
         "ml",
         "bl",
         "bc"
-      ],
-      "tags": [
-        "grass_normal"
       ]
     },
     {
@@ -3189,9 +3152,6 @@
         "tc",
         "tr",
         "mr"
-      ],
-      "tags": [
-        "grass_normal"
       ]
     },
     {
@@ -3208,9 +3168,6 @@
         "tr",
         "ml",
         "mr"
-      ],
-      "tags": [
-        "grass_normal"
       ]
     },
     {
@@ -3225,9 +3182,6 @@
         "tl",
         "ml",
         "tc"
-      ],
-      "tags": [
-        "grass_normal"
       ]
     },
     {
@@ -3508,9 +3462,6 @@
         "bc",
         "br",
         "tc"
-      ],
-      "tags": [
-        "grass_normal"
       ]
     },
     {
@@ -3530,9 +3481,6 @@
         "bc",
         "br",
         "tc"
-      ],
-      "tags": [
-        "grass_normal"
       ]
     },
     {
@@ -3552,9 +3500,6 @@
         "bc",
         "br",
         "tc"
-      ],
-      "tags": [
-        "grass_normal"
       ]
     },
     {
@@ -9742,5 +9687,11 @@
       "terrainCategory": "grass",
       "collectionName": ""
     }
-  ]
+  ],
+  "terrainCategories": [
+    "grass",
+    "dirt",
+    "water"
+  ],
+  "collectionNames": []
 }

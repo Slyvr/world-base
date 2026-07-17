@@ -24,8 +24,8 @@ import java.util.*;
  */
 public class AutoTileSystem {
 
-    // Sorted sprites per tag: largest constraint set first
-    private final Map<String, List<SpriteEntry>> tagSprites;
+    // Sorted sprites per terrain category: largest constraint set first
+    private final Map<String, List<SpriteEntry>> categorySprites;
 
     //               tl    tc    tr    ml    mr    bl    bc    br
     private static final int[][] OFFSETS = {{-1,1},{0,1},{1,1},{-1,0},{1,0},{-1,-1},{0,-1},{1,-1}};
@@ -41,16 +41,17 @@ public class AutoTileSystem {
     }
 
     public AutoTileSystem(SpriteSheetLoader loader) {
-        this.tagSprites = new HashMap<>();
+        this.categorySprites = new HashMap<>();
 
-        for (var sprite : loader.getSpritesByTag("grass_normal")) {
+        // Load grass sprites from terrain category (defined via groups in the JSON)
+        for (var sprite : loader.getSpritesByCategory("grass")) {
             Set<String> cons = new HashSet<>(Arrays.asList(sprite.constraints));
-            tagSprites.computeIfAbsent("grass_normal", k -> new ArrayList<>())
+            categorySprites.computeIfAbsent("grass", k -> new ArrayList<>())
                       .add(new SpriteEntry(cons, sprite.id));
         }
 
         // Sort largest constraint set first so we match the most specific sprite
-        for (List<SpriteEntry> list : tagSprites.values()) {
+        for (List<SpriteEntry> list : categorySprites.values()) {
             list.sort((a, b) -> Integer.compare(b.constraints.size(), a.constraints.size()));
         }
     }
@@ -61,7 +62,7 @@ public class AutoTileSystem {
      */
     public void autoTileGrass(EntityManager em, int width, int height) {
         boolean[][] isGrass = buildGrassGrid(em, width, height);
-        List<SpriteEntry> candidates = tagSprites.get("grass_normal");
+        List<SpriteEntry> candidates = categorySprites.get("grass");
         if (candidates == null || candidates.isEmpty()) return;
 
         for (Entity entity : em.getAllEntitiesWith(PositionComponent.class, TileComponent.class, AppearanceComponent.class)) {
