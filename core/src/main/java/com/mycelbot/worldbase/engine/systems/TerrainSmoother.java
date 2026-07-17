@@ -26,13 +26,20 @@ public class TerrainSmoother {
     private static final int[] CX = { 0,  0, -1,  1};
     private static final int[] CY = { 1, -1,  0,  0};
 
+    // Diagonal offsets: tl, tr, bl, br
+    private static final int[] DXd = {-1,  1, -1,  1};
+    private static final int[] DYd = { 1,  1, -1, -1};
+
     /**
      * Remove grass tiles that lack at least two perpendicular edges
-     * connecting to other grass tiles. Iterates until stable.
+     * connecting to other grass tiles, then remove tiles where opposite
+     * diagonal corners are both water (patterns the auto-tile can't handle).
+     * Both phases iterate until stable.
      */
     public void smooth(EntityManager em, int width, int height) {
         boolean[][] isGrass = buildGrid(em, width, height);
 
+        // ─── Phase 1: perpendicular-edge survival rule ───
         boolean changed = true;
         while (changed) {
             changed = false;
@@ -63,6 +70,45 @@ public class TerrainSmoother {
             }
 
             // Remove marked tiles and update grid
+            for (Entity entity : toRemove) {
+                PositionComponent pos = em.getComponent(entity, PositionComponent.class);
+                isGrass[pos.x][pos.y] = false;
+                em.destroyEntity(entity);
+                changed = true;
+            }
+        }
+
+        // ─── Phase 2: opposite-corner water cleanup ───
+        // The auto-tile system's subset matching can't correctly handle
+        // tiles where two opposite diagonal neighbours are both water
+        // (e.g. tl+br or tr+bl water). Remove those tiles so the auto-tiler
+        // gets a clean edge it can work with.
+        changed = true;
+        while (changed) {
+            changed = false;
+            List<Entity> toRemove = new ArrayList<>();
+
+            for (Entity entity : em.getAllEntitiesWith(
+                    PositionComponent.class, TileComponent.class)) {
+                TileComponent tc = em.getComponent(entity, TileComponent.class);
+                if (tc.type != TileType.GRASS) continue;
+                PositionComponent pos = em.getComponent(entity, PositionComponent.class);
+
+                int x = pos.x;
+                int y = pos.y;
+
+                // Check 4 diagonal neighbours
+                boolean tl = x - 1 >= 0 && y + 1 < height && isGrass[x - 1][y + 1];
+                boolean tr = x + 1 < width && y + 1 < height && isGrass[x + 1][y + 1];
+                boolean bl = x - 1 >= 0 && y - 1 >= 0 && isGrass[x - 1][y - 1];
+                boolean br = x + 1 < width && y - 1 >= 0 && isGrass[x + 1][y - 1];
+
+                // Opposite corners both lack grass (either water or out of bounds)
+                if ((!tl && !br) || (!tr && !bl)) {
+                    toRemove.add(entity);
+                }
+            }
+
             for (Entity entity : toRemove) {
                 PositionComponent pos = em.getComponent(entity, PositionComponent.class);
                 isGrass[pos.x][pos.y] = false;
