@@ -126,11 +126,18 @@ public class WorldScreen extends ScreenAdapter {
         );
 
         // Create ECS world with island generator, sized from config
-        world = new World(config, new IslandGenerator(config));
+        IslandGenerator generator = new IslandGenerator(config);
+        world = new World(config, generator);
 
         // Smooth terrain: remove thin grass features before auto-tiling
         new TerrainSmoother().smooth(
             world.getEntityManager(), world.getWidth(), world.getHeight());
+
+        // Re-detect islands after smoothing (smoother may erode larger islands
+        // into smaller pieces), then remove any that fell below the threshold
+        generator.removeSmallIslands(
+            world.getEntityManager(), world.getWidth(), world.getHeight());
+        world.refreshIslands(generator);
 
         // Auto-tile grass tiles to use correct edge/corner sprites
         new AutoTileSystem(spritesheet).autoTileGrass(

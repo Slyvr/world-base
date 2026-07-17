@@ -35,4 +35,14 @@ public class World {
     public int getHeight() { return height; }
     public EntityManager getEntityManager() { return entityManager; }
     public List<IslandInfo> getIslands() { return islands; }
+
+    /**
+     * Re-populate the island list from a generator.
+     * Used after post-processing (e.g. TerrainSmoother) may have
+     * altered the tile layout.
+     */
+    public void refreshIslands(WorldGenerator generator) {
+        islands.clear();
+        islands.addAll(generator.getIslands());
+    }
 }

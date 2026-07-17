@@ -107,15 +107,19 @@ public class IslandGenerator extends WorldGenerator {
         }
 
         // Connected-component analysis — find islands, remove small ones
-        removeSmallIslands(em, width, height, isGrass);
+        removeSmallIslands(em, width, height);
     }
 
     /**
      * Detect connected components of grass tiles (4-direction cardinal
      * adjacency). Islands with fewer than {@value #MIN_ISLAND_TILES} tiles
      * are deleted. Surviving islands are stored for later retrieval.
+     * <p>
+     * Builds the grass grid from the current EntityManager state, so this
+     * can be called at any point in the pipeline (before or after smoothing).
      */
-    private void removeSmallIslands(EntityManager em, int width, int height, boolean[][] isGrass) {
+    public void removeSmallIslands(EntityManager em, int width, int height) {
+        boolean[][] isGrass = buildGrassGrid(em, width, height);
         boolean[][] visited = new boolean[width][height];
         List<IslandInfo> detected = new ArrayList<>();
         int islandId = 0;
@@ -184,6 +188,20 @@ public class IslandGenerator extends WorldGenerator {
         }
 
         this.islands = detected;
+    }
+
+    /** Build a grass boolean grid from the current EntityManager state. */
+    private boolean[][] buildGrassGrid(EntityManager em, int width, int height) {
+        boolean[][] grid = new boolean[width][height];
+        for (Entity entity : em.getAllEntitiesWith(
+                PositionComponent.class, TileComponent.class)) {
+            TileComponent tc = em.getComponent(entity, TileComponent.class);
+            if (tc.type == TileType.GRASS) {
+                PositionComponent pos = em.getComponent(entity, PositionComponent.class);
+                grid[pos.x][pos.y] = true;
+            }
+        }
+        return grid;
     }
 
     @Override
