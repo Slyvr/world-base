@@ -84,14 +84,11 @@ public class DiagonalCleaner {
 
                     // If neither edge tile is grass, this is a bad diagonal
                     if (!edge1Grass && !edge2Grass) {
-                        // Deterministic: remove the tile with higher y, or higher x if y ties
-                        long loserKey;
-                        if (y > ny || (y == ny && x > nx)) {
-                            loserKey = ((long) x << 32) | (y & 0xffffffffL);
-                        } else {
-                            loserKey = ((long) nx << 32) | (ny & 0xffffffffL);
-                        }
-                        toRemove.add(loserKey);
+                        // Both tiles are orphaned — remove them both
+                        long keyA = ((long) x << 32) | (y & 0xffffffffL);
+                        long keyB = ((long) nx << 32) | (ny & 0xffffffffL);
+                        toRemove.add(keyA);
+                        toRemove.add(keyB);
                     }
                 }
             }
