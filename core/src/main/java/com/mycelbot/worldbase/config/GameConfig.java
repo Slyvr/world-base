@@ -41,8 +41,8 @@ public class GameConfig {
     // ──────────────────────────────────────────────
     //  Sprite sheet
     // ──────────────────────────────────────────────
-    private String spritesheetImage = "spritesheets/base_out_atlas.png";
-    private String spritesheetData  = "spritesheets/base_out_atlas.json";
+    private String spritesheetImage = "spritesheets/terrain.png";
+    private String spritesheetData  = "spritesheets/terrain.json";
 
     // ──────────────────────────────────────────────
     //  Entity limits

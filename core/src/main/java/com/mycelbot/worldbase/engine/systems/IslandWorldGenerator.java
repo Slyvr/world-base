@@ -15,6 +15,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Random;
 
 /**
  * Generates a world of water with multiple noise-shaped islands at
@@ -41,6 +42,8 @@ public class IslandWorldGenerator extends WorldGenerator {
     private static final int ISLAND_GAP = 4;
     private static final int ISLAND_COUNT = 2;
 
+    private final Random rng;
+
     private final double frequency;
     private final int octaves;
     private final double radiusFraction;
@@ -64,6 +67,7 @@ public class IslandWorldGenerator extends WorldGenerator {
 
     public IslandWorldGenerator(double frequency, int octaves,
                                  double radiusFraction, double threshold) {
+        this.rng = new Random();
         this.frequency = frequency;
         this.octaves = octaves;
         this.radiusFraction = radiusFraction;
@@ -72,14 +76,17 @@ public class IslandWorldGenerator extends WorldGenerator {
 
     @Override
     public void generate(EntityManager em, int width, int height) {
+        int[] waterVariants = TileType.WATER.getInteriorVariants();
+
         // Layer 0: full water grid
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
+                int waterSprite = waterVariants[rng.nextInt(waterVariants.length)];
                 var e = em.createEntity();
                 em.addComponent(e, new PositionComponent(x, y));
                 em.addComponent(e, new ZComponent(0));
                 em.addComponent(e, new TileComponent(TileType.WATER));
-                em.addComponent(e, new AppearanceComponent(TileType.WATER.getSpriteId()));
+                em.addComponent(e, new AppearanceComponent(waterSprite));
             }
         }
 
@@ -213,14 +220,16 @@ public class IslandWorldGenerator extends WorldGenerator {
 
     /** Place an island's grass tiles into the world at (ox, oy). */
     private void placeIsland(EntityManager em, SingleIsland island, int ox, int oy) {
+        int[] grassVariants = TileType.GRASS.getInteriorVariants();
         for (int x = 0; x < island.width; x++) {
             for (int y = 0; y < island.height; y++) {
                 if (!island.tiles[x][y]) continue;
+                int grassSprite = grassVariants[rng.nextInt(grassVariants.length)];
                 var e = em.createEntity();
                 em.addComponent(e, new PositionComponent(ox + x, oy + y));
                 em.addComponent(e, new ZComponent(1));
                 em.addComponent(e, new TileComponent(TileType.GRASS));
-                em.addComponent(e, new AppearanceComponent(TileType.GRASS.getSpriteId()));
+                em.addComponent(e, new AppearanceComponent(grassSprite));
             }
         }
     }
