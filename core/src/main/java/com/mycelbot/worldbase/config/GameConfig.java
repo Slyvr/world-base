@@ -25,7 +25,7 @@ public class GameConfig {
     private int worldHeight = 100;
 
     // ──────────────────────────────────────────────
-    //  Generator — IslandGenerator defaults
+    //  Generator — IslandWorldGenerator defaults
     // ──────────────────────────────────────────────
     private String   generatorType       = "island";
     private double   noiseFrequency      = 0.04;

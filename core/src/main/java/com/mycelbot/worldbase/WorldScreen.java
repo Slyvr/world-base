@@ -16,7 +16,7 @@ import com.mycelbot.worldbase.engine.World;
 import com.mycelbot.worldbase.engine.systems.AutoTileSystem;
 import com.mycelbot.worldbase.engine.systems.CameraSystem;
 import com.mycelbot.worldbase.engine.systems.TerrainSmoother;
-import com.mycelbot.worldbase.engine.systems.IslandGenerator;
+import com.mycelbot.worldbase.engine.systems.IslandWorldGenerator;
 import com.mycelbot.worldbase.engine.systems.RenderSystem;
 import com.mycelbot.worldbase.util.SpriteSheetLoader;
 
@@ -126,7 +126,7 @@ public class WorldScreen extends ScreenAdapter {
         );
 
         // Create ECS world with island generator, sized from config
-        IslandGenerator generator = new IslandGenerator(config);
+        IslandWorldGenerator generator = new IslandWorldGenerator(config);
         world = new World(config, generator);
 
         // Smooth terrain: remove thin grass features before auto-tiling
