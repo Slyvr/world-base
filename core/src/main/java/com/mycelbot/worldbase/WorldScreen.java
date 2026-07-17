@@ -125,8 +125,20 @@ public class WorldScreen extends ScreenAdapter {
             config.getSpritesheetData()
         );
 
+        // Look up baseline tiles by title from the JSON data
+        var grassSprite = spritesheet.getSpriteByTitle("grass");
+        var waterSprite = spritesheet.getSpriteByTitle("water");
+        if (grassSprite != null && waterSprite != null) {
+            Gdx.app.log("WorldScreen", "Baseline tiles: grass=" + grassSprite.id
+                + " row=" + grassSprite.row + " col=" + grassSprite.col
+                + "  water=" + waterSprite.id
+                + " row=" + waterSprite.row + " col=" + waterSprite.col);
+        }
+
         // Create ECS world with island generator, sized from config
         IslandWorldGenerator generator = new IslandWorldGenerator(config);
+        if (grassSprite != null) generator.setGrassBaselineSpriteId(grassSprite.id);
+        if (waterSprite != null) generator.setWaterBaselineSpriteId(waterSprite.id);
         world = new World(config, generator);
 
         // Smooth terrain: remove thin grass features before auto-tiling

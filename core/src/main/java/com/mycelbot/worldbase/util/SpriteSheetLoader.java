@@ -215,6 +215,19 @@ public class SpriteSheetLoader {
         return result;
     }
 
+    /**
+     * Return the first sprite whose title matches the given name, or null.
+     * Used for looking up baseline tiles (e.g. a sprite titled "grass").
+     */
+    public SpriteData getSpriteByTitle(String title) {
+        for (SpriteData data : spriteDataMap.values()) {
+            if (title.equals(data.title)) {
+                return data;
+            }
+        }
+        return null;
+    }
+
     public Texture getTexture() {
         return texture;
     }
